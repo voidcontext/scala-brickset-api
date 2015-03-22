@@ -1,2 +1,2 @@
 # scala-brickset-api
-A brickset.com api client written in Scala
+A brickset.com client written in Scala.
