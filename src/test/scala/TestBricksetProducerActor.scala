@@ -6,27 +6,30 @@ import bricksetproduceractor._
 import scala.collection.JavaConversions._
 import akka.actor.{ActorSystem, Props}
 
-import akka.pattern.ask
-import scala.concurrent.Await
-import akka.util.Timeout
-import scala.concurrent.duration._
+import akka.testkit.{TestKit, ImplicitSender}
 
 
 
-class BricksetProducerActorSpec extends FlatSpec with Matchers {
-  val sys = ActorSystem("BricksetProducerActorTest")
-  val actor = sys.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
+class BricksetProducerActorSpec extends TestKit(ActorSystem("BricksetProducerActorTest")) 
+  with ImplicitSender
+  with Matchers
+  with FlatSpecLike
+  with BeforeAndAfter {
 
-  implicit val timeout = Timeout(60 seconds)
+  after {
+    system.shutdown()
+  }
+
+  val actor = system.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
 
   it should "check the key" in {
     val req = new BricksetRequest(List("dummy key"), Map(
       "operationName" -> "checkKey"
     ))
     
-    val future = actor ? req
+    actor ! req
+
+    expectMsg("INVALIDKEY")
     
-    val result = Await.result(future, timeout.duration).asInstanceOf[String]
-    result shouldBe ("INVALIDKEY")
   }
 }
