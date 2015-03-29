@@ -18,6 +18,7 @@ class BricksetProducerActor extends Actor {
   def extract(response: MessageContentsList) : Any = {
     response.toArray.toList match {
       case List(str: String) => str
+      case List(sets: ArrayOfSets) => sets.getSets().toArray.toList
     }
   }
 
