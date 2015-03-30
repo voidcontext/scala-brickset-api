@@ -14,10 +14,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import javax.xml.bind.annotation.XmlType
 
-import scala.reflect._
-
-case class CArrayOfSets(aos: ArrayOfSets)
-
 class BricksetClient(val apiKey: String) {
   // create an actor system
   private val sys = ActorSystem("BricksetClient")
