@@ -8,7 +8,8 @@ object BricksetClientBuild extends Build {
     "brickset-client",
     file("."),
     settings = Defaults.defaultSettings ++ Seq(
-      name := "scala-brickset-client",
+      name := "bricksetclient",
+      organization := "io.github.voidcontext",
       version := "0.0.1-SNAPSHOT",
       scalaVersion := "2.11.6",
       libraryDependencies ++= Seq(

@@ -1,8 +1,7 @@
-package bricksetclient
+package io.github.voidcontext.bricksetclient.client
 
+import io.github.voidcontext.bricksetclient.api._
 import scala.collection.JavaConversions._
-import bricksetproduceractor._
-import com.brickset.api._
 
 import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask

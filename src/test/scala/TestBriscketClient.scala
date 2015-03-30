@@ -1,20 +1,21 @@
 package bricksetapispec
 
 import org.scalatest._
-import bricksetclient._
 
-import com.brickset.api._
+import io.github.voidcontext.bricksetclient.client.BricksetClient
+import io.github.voidcontext.bricksetclient.api._
+
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import akka.util.Timeout
 
 class BricksetClientSpec extends FlatSpec with Matchers {
-  var source = io.Source.fromFile("src/test/resources/api.key")
+  var source = scala.io.Source.fromFile("src/test/resources/api.key")
   val apikey = source.mkString.trim
   source.close
 
-  source = io.Source.fromFile("src/test/resources/credentials.txt")
+  source = scala.io.Source.fromFile("src/test/resources/credentials.txt")
   val credentials = source.getLines
   val username = credentials.next
   val password = credentials.next

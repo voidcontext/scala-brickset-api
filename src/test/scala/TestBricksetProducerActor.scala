@@ -1,7 +1,7 @@
 package bricksetactorspec
 
 import org.scalatest._
-import bricksetproduceractor._
+import io.github.voidcontext.bricksetclient.client.{BricksetProducerActor, BricksetRequest}
 
 import scala.collection.JavaConversions._
 import akka.actor.{ActorSystem, Props}
