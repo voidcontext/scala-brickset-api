@@ -8,8 +8,6 @@ import org.apache.cxf.message.MessageContentsList
 
 import io.github.voidcontext.bricksetclient.api._
 
-case class BricksetRequest(body: java.util.List[String], headers: java.util.Map[String, Object])
-
 class BricksetProducerActor extends Actor {
   val camel = CamelExtension(context.system)
 
