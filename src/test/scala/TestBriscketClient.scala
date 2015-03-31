@@ -41,6 +41,17 @@ class BricksetClientSpec extends FlatSpec with Matchers {
     result shouldNot startWith regex "(Error:|INVALIDKEY).*"
   }
 
+  it should "query sets" in {
+    val future: Future[Seq[Sets]] = client.getSets(Map(
+        "query" -> "6273"
+      ))
+
+    val result = Await.result(future, duration)
+    
+    val set = result.filter(set => set.getNumber == "6273").head
+    set.getName shouldBe "Rock Island Refuge"
+  }
+
   it should "load owned sets" in {
     val future: Future[Seq[Sets]] = client.getOwnedSets()
     val result = Await.result(future, duration)

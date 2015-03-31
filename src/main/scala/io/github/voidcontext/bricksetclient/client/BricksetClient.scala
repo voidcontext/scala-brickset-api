@@ -51,7 +51,15 @@ class BricksetClient(val apiKey: String) {
   }
 
   /**
-   * 
+   * Get sets
+   */
+  def getSets(params: Map[String, String]) : Future[Seq[Sets]] = {
+    askBricksetActor(classOf[GetSets], params)
+      .mapTo[Seq[Sets]]
+  }
+
+  /**
+   * Shortcut for getting the owned sets of the previously logged in user
    */
   def getOwnedSets() : Future[Seq[Sets]] = {
     askBricksetActor(classOf[GetSets], Map(
