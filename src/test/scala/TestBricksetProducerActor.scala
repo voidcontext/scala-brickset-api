@@ -8,6 +8,7 @@ import akka.actor.{ActorSystem, Props}
 
 import akka.testkit.{TestKit, ImplicitSender}
 
+import scala.concurrent.duration._
 
 
 class BricksetProducerActorSpec extends TestKit(ActorSystem("BricksetProducerActorTest")) 
@@ -29,7 +30,7 @@ class BricksetProducerActorSpec extends TestKit(ActorSystem("BricksetProducerAct
     
     actor ! req
 
-    expectMsg("INVALIDKEY")
+    expectMsg(20 seconds, "INVALIDKEY")
     
   }
 }
