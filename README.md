@@ -1,7 +1,7 @@
 # scala-brickset-client
 A brickset.com api client written in Scala.
 
-# Requirements
+### Requirements
 
 Scala 2.11.x
 
@@ -15,7 +15,7 @@ resolvers ++= Seq(Resolvers.sonatypeRepo("snapshots")) // when using snapshot
 libraryDependencies += "io.github.voidcontext" %% "brickset client" % "0.1.0-SNAPSHOT"
 ```
 
-## Usage
+### Usage
 
 Using BricksetClient with futures:
 
@@ -42,12 +42,12 @@ future onSuccess {
 
 Alternatively you can use BricksetProducerActor [akka.io](http://akka.io) actor in your existing actor system.
 
-## See also
+### See also
 
 - [brickset.com](http://brickset.com)
 - [bricket api v2](http://brickset.com/tools/webservices/v2)
 
-## License
+### License
 
 The MIT License (MIT)
 
