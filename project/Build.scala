@@ -7,7 +7,7 @@ import xerial.sbt.Sonatype.sonatypeSettings
 
 object BricksetClientBuild extends Build {
   val publishSettings = Seq(
-    profileName := "voidcontext",
+    profileName := "io.github.voidcontext",
     publishMavenStyle := true,
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
@@ -45,7 +45,7 @@ object BricksetClientBuild extends Build {
     settings = Defaults.defaultSettings ++ sonatypeSettings ++ publishSettings ++ Seq(
       name := "bricksetclient",
       organization := "io.github.voidcontext",
-      version := "0.0.1-SNAPSHOT",
+      version := "0.1.0",
       scalaVersion := "2.11.6",
       libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor" % "2.3.9",
