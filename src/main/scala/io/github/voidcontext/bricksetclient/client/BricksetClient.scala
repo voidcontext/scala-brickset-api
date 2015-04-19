@@ -10,15 +10,17 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
+case class InvalidCredentialsError(message: String)
+
+
 class BricksetClient(val apiKey: String) {
+  type LoginResult = Either[String, InvalidCredentialsError]
+
   // create an actor system
   private val sys = ActorSystem("BricksetClient")
 
   // instantiate a BricksetProducerActor actor
   private val actor = sys.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
-
-  // user hash
-  private var userHash: String = ""
 
   // set promise timmeouts
   implicit val timeout = Timeout(60 seconds)
@@ -37,17 +39,17 @@ class BricksetClient(val apiKey: String) {
   /**
    * Get user hash using the given credentials
    */
-  def login(username: String, password: String): Future[String] = {
-    val future = askBricksetActor(classOf[Login], Map(
+  def login(username: String, password: String): Future[LoginResult] = {
+    val errorRe = "(ERROR:.*|INVALIDKEY)".r
+
+    askBricksetActor(classOf[Login], Map(
         "username" -> username,
         "password" -> password
-      )).mapTo[String]
-
-    future onSuccess {
-      case uh : String => userHash = uh
-    }
-
-    future
+      )).mapTo[String] map { _ match {
+          case errorRe(message) => Right(InvalidCredentialsError(message))
+          case userHash         => Left(userHash)
+        }
+      }
   }
 
   /**
@@ -61,7 +63,7 @@ class BricksetClient(val apiKey: String) {
   /**
    * Shortcut for getting the owned sets of the previously logged in user
    */
-  def getOwnedSets() : Future[Seq[Sets]] = {
+  def getOwnedSets(userHash: String) : Future[Seq[Sets]] = {
     askBricksetActor(classOf[GetSets], Map(
         "userHash" -> userHash,
         "owned" -> "1"

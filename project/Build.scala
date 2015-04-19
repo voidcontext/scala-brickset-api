@@ -45,7 +45,7 @@ object BricksetClientBuild extends Build {
     settings = Defaults.defaultSettings ++ sonatypeSettings ++ publishSettings ++ Seq(
       name := "bricksetclient",
       organization := "io.github.voidcontext",
-      version := "0.1.0",
+      version := "0.2.0-SNAPSHOT",
       scalaVersion := "2.11.6",
       libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor" % "2.3.9",
