@@ -13,14 +13,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class InvalidCredentialsError(message: String)
 
 
-class BricksetClient(val apiKey: String) {
+class BricksetClient(val apiKey: String, outerSystem: Option[ActorSystem]) {
   type LoginResult = Either[InvalidCredentialsError, String]
 
+  private val internalActorSystemName = "BricksetClient"
+
   // create an actor system
-  private val sys = ActorSystem("BricksetClient")
+  private val system = outerSystem match {
+    case Some(actorSystem) => actorSystem
+    case None              => ActorSystem(internalActorSystemName)
+  }
 
   // instantiate a BricksetProducerActor actor
-  private val actor = sys.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
+  private val actor = system.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
 
   // set promise timmeouts
   implicit val timeout = Timeout(60 seconds)
@@ -69,7 +74,11 @@ class BricksetClient(val apiKey: String) {
         "owned" -> "1"
       ))
       .mapTo[Seq[Sets]]
+  }
 
+  def shutdown() : Unit = system.name match {
+    case `internalActorSystemName`=> system.shutdown()
+    case _                       => ()
   }
 }
 

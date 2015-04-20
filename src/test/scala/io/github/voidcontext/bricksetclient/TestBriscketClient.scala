@@ -9,8 +9,9 @@ import io.github.voidcontext.bricksetclient.api._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import akka.util.Timeout
+import akka.actor.ActorSystem
 
-class BricksetClientSpec extends FlatSpec with Matchers {
+class BricksetClientSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   var source = scala.io.Source.fromFile("src/test/resources/api.key")
   val apikey = source.mkString.trim
   source.close
@@ -23,8 +24,12 @@ class BricksetClientSpec extends FlatSpec with Matchers {
 
   val duration = (60 seconds)
 
-  val client = new BricksetClient(apikey)
+  val client = new BricksetClient(apikey, None)
   var userHash = "";
+
+  override def afterAll() {
+    client.shutdown()
+  }
 
   it should "check the api key" in {
     
@@ -74,5 +79,21 @@ class BricksetClientSpec extends FlatSpec with Matchers {
     val result = Await.result(future, duration)
 
     result.length should be > 1
+  }
+
+  it should "use the given actor system when available" in {
+    val system = ActorSystem("BricksetClientTest")
+    val client2 = new BricksetClient(apikey, Some(system));
+
+    val future = client2.checkKey()
+    val result = Await.result(future, duration)
+
+    result should fullyMatch regex "OK \\(v2(ACM|)\\)"
+
+    // should do nothing
+    client2.shutdown()
+
+    // should shut down the actor system
+    system.shutdown()
   }
 }
