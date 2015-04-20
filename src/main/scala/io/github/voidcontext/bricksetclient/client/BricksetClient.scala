@@ -14,7 +14,7 @@ case class InvalidCredentialsError(message: String)
 
 
 class BricksetClient(val apiKey: String) {
-  type LoginResult = Either[String, InvalidCredentialsError]
+  type LoginResult = Either[InvalidCredentialsError, String]
 
   // create an actor system
   private val sys = ActorSystem("BricksetClient")
@@ -46,8 +46,8 @@ class BricksetClient(val apiKey: String) {
         "username" -> username,
         "password" -> password
       )).mapTo[String] map { _ match {
-          case errorRe(message) => Right(InvalidCredentialsError(message))
-          case userHash         => Left(userHash)
+          case errorRe(message) => Left(InvalidCredentialsError(message))
+          case userHash         => Right(userHash)
         }
       }
   }

@@ -39,7 +39,7 @@ class BricksetClientSpec extends FlatSpec with Matchers {
     val future = client.login("dummyUser", "dummyPassword")
 
     Await.result(future, duration) match {
-      case Right(err) => err.message shouldBe "ERROR: invalid username and/or password"
+      case Left(err) => err.message shouldBe "ERROR: invalid username and/or password"
       case _          => fail("Got valid login response")
     }
 
@@ -49,10 +49,10 @@ class BricksetClientSpec extends FlatSpec with Matchers {
     
     val future = client.login(username, password)
     Await.result(future, duration) match {
-      case Left(hash) => {
+      case Left(err) => fail(err.message)
+      case Right(hash) => {
         userHash = hash
       }
-      case Right(err) => fail(err.message)
     }
 
     userHash shouldNot startWith regex "(ERROR|INVALIDKEY)"
