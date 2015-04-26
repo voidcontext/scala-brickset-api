@@ -12,7 +12,7 @@ resolvers ++= Seq(Resolvers.sonatypeRepo("releases")) // when using stable
 
 resolvers ++= Seq(Resolvers.sonatypeRepo("snapshots")) // when using snapshot
 
-libraryDependencies += "io.github.voidcontext" %% "brickset client" % "0.1.0-SNAPSHOT"
+libraryDependencies += "io.github.voidcontext" %% "bricksetclient" % "0.2.0-SNAPSHOT"
 ```
 
 ### Usage
@@ -25,22 +25,36 @@ import io.github.voidcontext.bricksetclient.api._
 // import client
 import io.github.voidcontext.bricksetclient.client.BricksetClient
 
-val client = new BricksetClient("your api key here")
+import scala.util.{Success, Failure}
+
+val client = new BricksetClient(apikey, None)
 val future = client.login(username, password)
 
-future onSuccess {
-  val future2 = client.getOwnedSets
-  
-  future2 onSuccess {
-    case setsOwnedByLoggedInUser: Seq[Sets] => {
-      // print owned sets
+future flatMap {
+  case Right(hash) => client.getOwnedSets(hash)
+  case Left(err) => Future { throw err }
+} onComplete {
+  case Success(setsOwnedByLoggedInUser) => {
+      setsOwnedByLoggedInUser map { s => println(s.getName)}
+      client.shutdown
     }
-  }
-  
+  case Failure(_) => {
+      println("Couldn't get owned sets")
+      client.shutdown
+    }
 }
 ```
 
-Alternatively you can use BricksetProducerActor [akka.io](http://akka.io) actor in your existing actor system.
+You can find an example implementation in the examples direcotry.
+To run the example app you should publish the bricksetclient package locally.
+
+```bash
+$ # edit credentials in examples/ownedsets.scala 
+$ $EDITOR examples/ownedsets.scala
+$ sbt publishLocal
+$ cd examples
+$ sbt run
+```
 
 ### See also
 
