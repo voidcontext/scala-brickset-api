@@ -31,7 +31,7 @@ class BricksetClient(val apiKey: String, outerSystem: Option[ActorSystem]) {
   implicit val timeout = Timeout(60 seconds)
 
   private def askBricksetActor[T](operationClass: Class[T], params: Map[String, String]): Future[Any] = {
-    actor ? BricksetRequestBuilder.build(apiKey, operationClass, params);
+    actor ? BricksetRequestBuilder(apiKey, operationClass, params);
   }
 
   /**

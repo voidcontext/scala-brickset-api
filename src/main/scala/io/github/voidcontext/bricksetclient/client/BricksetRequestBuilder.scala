@@ -26,7 +26,7 @@ object BricksetRequestBuilder {
     str.head.toLower + str.tail
   }
 
-  def build[T](apiKey: String,operationClass: Class[T], params: Map[String, String]) : BricksetRequest = {
+  def apply[T](apiKey: String,operationClass: Class[T], params: Map[String, String]) : BricksetRequest = {
     BricksetRequest(buildBody(apiKey, operationClass, params), Map("operationName" -> lcfirst(operationClass.getSimpleName)))
   }
 }
