@@ -10,7 +10,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class InvalidCredentialsError(message: String)
+case class InvalidCredentialsError(message: String) extends Exception(message)
 
 
 class BricksetClient(val apiKey: String, outerSystem: Option[ActorSystem]) {
