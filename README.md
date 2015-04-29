@@ -27,7 +27,7 @@ import io.github.voidcontext.bricksetclient.client.BricksetClient
 
 import scala.util.{Success, Failure}
 
-val client = new BricksetClient(apikey, None)
+val client = BricksetClient(apikey)
 val future = client.login(username, password)
 
 future flatMap {
