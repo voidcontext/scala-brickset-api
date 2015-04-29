@@ -13,16 +13,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class InvalidCredentialsError(message: String) extends Exception(message)
 
 
-class BricksetClient(val apiKey: String, outerSystem: Option[ActorSystem]) {
+class BricksetClient(val apiKey: String, private val system: ActorSystem) {
   type LoginResult = Either[InvalidCredentialsError, String]
 
-  private val internalActorSystemName = "BricksetClient"
-
-  // create an actor system
-  private val system = outerSystem match {
-    case Some(actorSystem) => actorSystem
-    case None              => ActorSystem(internalActorSystemName)
-  }
+  private var internalActorSystem = false;
 
   // instantiate a BricksetProducerActor actor
   private val actor = system.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
@@ -76,10 +70,25 @@ class BricksetClient(val apiKey: String, outerSystem: Option[ActorSystem]) {
       .mapTo[Seq[Sets]]
   }
 
-  def shutdown() : Unit = system.name match {
-    case `internalActorSystemName`=> system.shutdown()
-    case _                       => ()
+  def shutdown() : Unit = internalActorSystem match {
+    case internal if internal => system.shutdown()
+    case _                    => ()
   }
+}
+
+object BricksetClient {
+  val internalActorSystemName = "BricksetClient"
+
+  def apply(apikey: String) = {
+    val system = ActorSystem(internalActorSystemName)
+    val client = new BricksetClient(apikey, system)
+    client.internalActorSystem = true
+
+    client
+  }
+
+  def apply(apikey: String, outerSystem: ActorSystem): BricksetClient = new BricksetClient(apikey, outerSystem)
+
 }
 
 

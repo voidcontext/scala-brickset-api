@@ -5,7 +5,6 @@ import org.scalatest._
 import io.github.voidcontext.bricksetclient.client._
 import io.github.voidcontext.bricksetclient.api._
 
-
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import akka.util.Timeout
@@ -24,7 +23,7 @@ class BricksetClientSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   val duration = (60 seconds)
 
-  val client = new BricksetClient(apikey, None)
+  val client = BricksetClient(apikey)
   var userHash = "";
 
   override def afterAll() {
@@ -53,6 +52,7 @@ class BricksetClientSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   it should "login with credentials" in {
     
     val future = client.login(username, password)
+
     Await.result(future, duration) match {
       case Left(err) => fail(err.message)
       case Right(hash) => {
@@ -83,7 +83,7 @@ class BricksetClientSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   it should "use the given actor system when available" in {
     val system = ActorSystem("BricksetClientTest")
-    val client2 = new BricksetClient(apikey, Some(system));
+    val client2 = BricksetClient(apikey, system);
 
     val future = client2.checkKey()
     val result = Await.result(future, duration)
