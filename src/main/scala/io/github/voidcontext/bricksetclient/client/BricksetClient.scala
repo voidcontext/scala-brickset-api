@@ -14,7 +14,6 @@ case class InvalidCredentialsError(message: String) extends Exception(message)
 
 
 class BricksetClient(val apiKey: String, private val system: ActorSystem, val shutdown: () => Unit) {
-  type LoginResult = Either[InvalidCredentialsError, String]
 
   // instantiate a BricksetProducerActor actor
   private val actor = system.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")

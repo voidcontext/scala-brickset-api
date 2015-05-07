@@ -21,7 +21,7 @@ class BricksetClientSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   val password = credentials.next
   source.close
 
-  val duration = (60 seconds)
+  val duration = (60.seconds)
 
   val client = BricksetClient(apikey)
   var userHash = "";
@@ -51,7 +51,7 @@ class BricksetClientSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   it should "login with credentials" in {
     
-    val future = client.login(username, password)
+    val future: Future[LoginResult] = client.login(username, password)
 
     Await.result(future, duration) match {
       case Left(err) => fail(err.message)
