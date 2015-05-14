@@ -1,4 +1,6 @@
-target/
+.idea*
+docs/
+/out/
 src/test/resources/api.key
 src/test/resources/credentials.txt
-docs/
+target/

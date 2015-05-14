@@ -1,35 +1,25 @@
 package io.github.voidcontext.bricksetclient.client
 
 import io.github.voidcontext.bricksetclient.api._
-
-import akka.actor.{ActorSystem, Props}
-import akka.pattern.ask
-import akka.util.Timeout
-
 import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 case class InvalidCredentialsError(message: String) extends Exception(message)
 
-
-class BricksetClient(val apiKey: String, private val system: ActorSystem, val shutdown: () => Unit) {
-
-  // instantiate a BricksetProducerActor actor
-  private val actor = system.actorOf(Props[BricksetProducerActor], "bricksetproduceractor")
-
-  // set promise timmeouts
-  implicit val timeout = Timeout(60 seconds)
-
-  private def askBricksetActor[T](operationClass: Class[T], params: Map[String, String]): Future[Any] = {
-    actor ? BricksetRequestBuilder(apiKey, operationClass, params);
-  }
+class BricksetClient(val apiKey: String) {
+  /**
+   * Soap client
+   */
+  val service = (new BricksetAPIv2Soap12Bindings
+      with scalaxb.SoapClientsAsync
+      with scalaxb.DispatchHttpClientsAsync {}
+    ).service
 
   /**
    * Checks the current api key
    */
-  def checkKey(): Future[String] = {
-    askBricksetActor(classOf[CheckKey], Map()).mapTo[String]
+  def checkKey(): Future[CheckKeyResponse] = {
+    service.checkKey(Some(apiKey))
   }
 
   /**
@@ -38,46 +28,42 @@ class BricksetClient(val apiKey: String, private val system: ActorSystem, val sh
   def login(username: String, password: String): Future[LoginResult] = {
     val errorRe = "(ERROR:.*|INVALIDKEY)".r
 
-    askBricksetActor(classOf[Login], Map(
-        "username" -> username,
-        "password" -> password
-      )).mapTo[String] map { _ match {
-          case errorRe(message) => Left(InvalidCredentialsError(message))
-          case userHash         => Right(userHash)
-        }
+    service.login(Some(apiKey), Some(username), Some(password)) map { response: LoginResponse =>
+      for {
+        result <- response.loginResult
+      } yield result match {
+        case errorRe(response) => Failure(InvalidCredentialsError(response))
+        case userHash          => Success(userHash)
       }
+    }
   }
 
-  /**
-   * Get sets
-   */
-  def getSets(params: Map[String, String]) : Future[Seq[Sets]] = {
-    askBricksetActor(classOf[GetSets], params)
-      .mapTo[Seq[Sets]]
+  def getSets(userHash: Option[String] = Some(""), query: Option[String] = Some(""), theme: Option[String] = Some(""),
+              subtheme: Option[String] = Some(""), setNumber: Option[String] = Some(""), year: Option[String] = Some(""),
+              owned: Option[String] = Some(""), wanted: Option[String] = Some(""), orderBy: Option[String] = Some(""),
+              pageSize: Option[String] = Some(""), pageNumber: Option[String] = Some(""), userName: Option[String] = Some("")
+               ): Future[Option[Seq[Sets]]] = {
+
+    service.getSets(Some(apiKey), userHash, query, theme, subtheme, setNumber, year, owned, wanted, orderBy, pageSize,
+      pageNumber, userName) map { res =>
+        for {
+          aos <- res.getSetsResult
+        } yield aos.sets.flatten
+      }
   }
 
   /**
    * Shortcut for getting the owned sets of the previously logged in user
    */
-  def getOwnedSets(userHash: String) : Future[Seq[Sets]] = {
-    askBricksetActor(classOf[GetSets], Map(
-        "userHash" -> userHash,
-        "owned" -> "1"
-      ))
-      .mapTo[Seq[Sets]]
+  def getOwnedSets(userHash: String) : Future[Option[Seq[Sets]]] = {
+    getSets(Some(userHash), owned = Some("1"))
   }
 }
 
 object BricksetClient {
-  val internalActorSystemName = "BricksetClient"
-
   def apply(apikey: String) = {
-    val system = ActorSystem(internalActorSystemName)
-    new BricksetClient(apikey, system, () => system.shutdown)
+    new BricksetClient(apikey)
   }
-
-  def apply(apikey: String, outerSystem: ActorSystem): BricksetClient = new BricksetClient(apikey, outerSystem, () => Unit)
-
 }
 
 

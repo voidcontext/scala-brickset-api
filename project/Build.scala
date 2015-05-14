@@ -4,6 +4,8 @@ import sbt._
 import Keys._
 import xerial.sbt.Sonatype.SonatypeKeys._
 import xerial.sbt.Sonatype.sonatypeSettings
+import sbtscalaxb.Plugin._
+import sbtscalaxb.Plugin.ScalaxbKeys._
 
 object BricksetClientBuild extends Build {
   val publishSettings = Seq(
@@ -39,21 +41,29 @@ object BricksetClientBuild extends Build {
     }
   )
 
+  val dispatchV = "0.11.2"
+
+  val myScalaxbSettings = Seq(
+    sourceGenerators in Compile += (scalaxb in Compile).taskValue,
+    dispatchVersion in scalaxb in Compile := dispatchV,
+    async in scalaxb in Compile           := true,
+    packageName in scalaxb in Compile     := "io.github.voidcontext.bricksetclient.api"
+  )
+
   lazy val root = Project(
     "brickset-client",
     file("."),
-    settings = Defaults.defaultSettings ++ sonatypeSettings ++ publishSettings ++ Seq(
+    settings = Defaults.defaultSettings ++ sonatypeSettings ++ publishSettings
+      ++ scalaxbSettings ++ myScalaxbSettings ++ Seq(
       name := "bricksetclient",
       organization := "io.github.voidcontext",
       version := "0.2.1-SNAPSHOT",
       scalaVersion := "2.11.6",
       scalacOptions := Seq("-feature", "-deprecation"),
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-actor" % "2.3.9",
-        "com.typesafe.akka" %% "akka-camel" % "2.3.9",
-        "com.typesafe.akka" %% "akka-testkit" % "2.3.9",
-        "org.apache.camel" % "camel-core" % "2.15.0",
-        "org.apache.camel" % "camel-cxf" % "2.15.0",
+        "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+        "net.databinder.dispatch" %% "dispatch-core" % dispatchV,
         "org.scalatest" %% "scalatest" % "2.2.1" % "test"
       )
     )
