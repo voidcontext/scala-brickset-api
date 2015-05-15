@@ -29,7 +29,7 @@ class BricksetClientSpec extends FlatSpec with Matchers {
   it should "check the api key" in {
     
     val future: Future[CheckKeyResponse] = client.checkKey()
-    var res: CheckKeyResponse = Await.result(future, duration)
+    val res: CheckKeyResponse = Await.result(future, duration)
 
     res.checkKeyResult match {
       case Some(result: String) => result should fullyMatch regex "OK \\(v2(ACM|)\\)"
