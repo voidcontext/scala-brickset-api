@@ -42,8 +42,8 @@ class BricksetClientSpec extends FlatSpec with Matchers {
     val future: Future[LoginResult] = client.login("dummyUser", "dummyPassword")
 
     Await.result(future, duration) match {
-      case Some(Failure(err)) => err.getMessage shouldBe "ERROR: invalid username and/or password"
-      case _                  => fail("Got valid login response or no response")
+      case Failure(err) => err.getMessage shouldBe "ERROR: invalid username and/or password"
+      case _            => fail("Got valid login response or no response")
     }
 
   }
@@ -53,35 +53,27 @@ class BricksetClientSpec extends FlatSpec with Matchers {
     val future: Future[LoginResult] = client.login(username, password)
 
     Await.result(future, duration) match {
-      case Some(Success(hash: String)) => userHash = hash
-      case Some(Failure(err))  => fail(err.getMessage)
-      case None                => fail
+      case Success(hash: String) => userHash = hash
+      case Failure(err)          => fail(err.getMessage)
     }
 
     userHash shouldNot startWith regex "(ERROR|INVALIDKEY)"
   }
 
   it should "query sets" in {
-    val future: Future[Option[Seq[Sets]]] = client.getSets(query = Some("6273"))
+    val future: Future[Seq[Sets]] = client.getSets(query = Some("6273"))
 
-    Await.result(future, duration) match {
-      case Some(sets: Seq[Sets]) => {
-        val set: Sets = sets filter { set => set.number.get == "6273"} head
-        val setName: String = set.name.get
+    val sets = Await.result(future, duration)
+    val set: Sets = (sets filter { set => set.number.get == "6273"}).head
+    val setName: String = set.name.get
 
-        setName shouldBe "Rock Island Refuge"
-      }
-      case None => fail("Empty response")
-    }
-    
+    setName shouldBe "Rock Island Refuge"
   }
 
   it should "load owned sets" in {
-    val future: Future[Option[Seq[Sets]]] = client.getOwnedSets(userHash)
-    Await.result(future, duration) match {
-      case Some(sets) => sets.length should be > 1
-      case None       => fail()
-    }
+    val future: Future[Seq[Sets]] = client.getOwnedSets(userHash)
+    val sets = Await.result(future, duration)
+    sets.length should be > 1
 
   }
 }

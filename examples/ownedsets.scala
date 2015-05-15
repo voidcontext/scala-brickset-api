@@ -18,12 +18,10 @@ object OwnedSets {
     val apiError = new Exception("API error")
 
     val completedFuture: Future[Unit] = loginFuture flatMap {
-      case Some(Success(hash))   => client.getOwnedSets(hash)
-      case Some(Failure(err))    => Future.failed(err)
-      case None                  => Future.failed(apiError)
-    } map {
-      case Some(sets: Seq[Sets]) => sets.foreach { set => println(set.name.get) }
-      case None                  => println(apiError.getMessage)
+      case Success(hash)   => client.getOwnedSets(hash)
+      case Failure(err)    => Future.failed(err)
+    } map { sets =>
+      sets.foreach { set => println(set.name.get) }
     } recover {
       case err: Exception        => println(err.getMessage)
     }
