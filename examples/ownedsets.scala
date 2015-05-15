@@ -14,10 +14,9 @@ object OwnedSets {
   def main(args: Array[String]) {
 
     val client = BricksetClient(apikey)
-    val loginFuture = client.login(username, password)
     val apiError = new Exception("API error")
 
-    val completedFuture: Future[Unit] = loginFuture flatMap {
+    val completedFuture: Future[Unit] =  client.login(username, password) flatMap {
       case Success(hash)   => client.getOwnedSets(hash)
       case Failure(err)    => Future.failed(err)
     } map { sets =>

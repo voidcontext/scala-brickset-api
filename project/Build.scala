@@ -57,7 +57,7 @@ object BricksetClientBuild extends Build {
       ++ scalaxbSettings ++ myScalaxbSettings ++ Seq(
       name := "bricksetclient",
       organization := "io.github.voidcontext",
-      version := "0.2.1-SNAPSHOT",
+      version := "0.3.0-SNAPSHOT",
       scalaVersion := "2.11.6",
       scalacOptions := Seq("-feature", "-deprecation"),
       libraryDependencies ++= Seq(
