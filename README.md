@@ -12,7 +12,7 @@ resolvers ++= Seq(Resolvers.sonatypeRepo("releases")) // when using stable
 
 resolvers ++= Seq(Resolvers.sonatypeRepo("snapshots")) // when using snapshot
 
-libraryDependencies += "io.github.voidcontext" %% "bricksetclient" % "0.2.0-SNAPSHOT"
+libraryDependencies += "io.github.voidcontext" %% "bricksetclient" % "0.3.0-SNAPSHOT"
 ```
 
 ### Usage
@@ -30,30 +30,22 @@ import scala.util.{Success, Failure}
 val client = BricksetClient(apikey)
 val future = client.login(username, password)
 
-future flatMap {
-  case Right(hash) => client.getOwnedSets(hash)
-  case Left(err) => Future { throw err }
-} onComplete {
-  case Success(setsOwnedByLoggedInUser) => {
-      setsOwnedByLoggedInUser map { s => println(s.getName)}
-      client.shutdown
-    }
-  case Failure(_) => {
-      println("Couldn't get owned sets")
-      client.shutdown
-    }
+client.login(username, password) flatMap {
+  case Success(hash)   => client.getOwnedSets(hash)
+  case Failure(err)    => Future.failed(err)
+} map { sets =>
+  sets.foreach { set => println(set.name.get) }
+} recover {
+  case err: Exception        => println(err.getMessage)
 }
 ```
 
 You can find an example implementation in the examples direcotry.
-To run the example app you should publish the bricksetclient package locally.
+
 
 ```bash
 $ # edit credentials in examples/ownedsets.scala 
-$ $EDITOR examples/ownedsets.scala
-$ sbt publishLocal
-$ cd examples
-$ sbt run
+$ sbt brickset-client-example/run
 ```
 
 ### See also
