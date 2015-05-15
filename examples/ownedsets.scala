@@ -1,33 +1,34 @@
-object OwnedSets {
-  import scala.concurrent._
-  import ExecutionContext.Implicits.global
 
+import io.github.voidcontext.bricksetclient.api._
+import io.github.voidcontext.bricksetclient.client.BricksetClient
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.util.{Success, Failure}
+
+object OwnedSets {
   val apikey = "apikey"
   val username = "username"
   val password = "password"
 
   def main(args: Array[String]) {
-    import io.github.voidcontext.bricksetclient.api._
-    import io.github.voidcontext.bricksetclient.client.BricksetClient
-
-    import scala.util.{Success, Failure}
 
     val client = BricksetClient(apikey)
-    val future = client.login(username, password)
+    val loginFuture = client.login(username, password)
+    val apiError = new Exception("API error")
 
-    future flatMap {
-      case Right(hash) => client.getOwnedSets(hash)
-      case Left(err) => Future { throw err }
-    } onComplete {
-      case Success(setsOwnedByLoggedInUser) => {
-          setsOwnedByLoggedInUser map { s => println(s.getName)}
-          client.shutdown
-        }
-      case Failure(_) => {
-          println("Couldn't get owned sets")
-          client.shutdown
-        }
+    val completedFuture: Future[Unit] = loginFuture flatMap {
+      case Some(Success(hash))   => client.getOwnedSets(hash)
+      case Some(Failure(err))    => Future.failed(err)
+      case None                  => Future.failed(apiError)
+    } map {
+      case Some(sets: Seq[Sets]) => sets.foreach { set => println(set.name.get) }
+      case None                  => println(apiError.getMessage)
+    } recover {
+      case err: Exception        => println(err.getMessage)
     }
+
+    Await.ready(completedFuture, 30.seconds)
   }
 }
 

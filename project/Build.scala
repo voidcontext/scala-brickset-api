@@ -68,4 +68,14 @@ object BricksetClientBuild extends Build {
       )
     )
   )
+
+  lazy val example = Project(
+    "brickset-client-example",
+    file("examples"),
+    settings = Seq(
+      version := "0.3.0-SNAPSHOT",
+      scalaVersion := "2.11.6",
+      scalacOptions := Seq("-feature", "-deprecation")
+    )
+  ).dependsOn(root)
 }
